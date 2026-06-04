@@ -16,6 +16,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Firebase SDK (Compat Version untuk Integrasi Tag Script yang Mulus) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         /* Pengaturan Tipografi Dinamis */
         .font-sans-custom { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -51,9 +56,14 @@
     <!-- KONTAINER NOTIFIKASI TOAST KUSTOM (Mencegah alert bawaan) -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
+    <!-- TAMPILAN LOADING SAAT MENGAMBIL DATA CLOUD -->
+    <div id="cloudLoadingScreen" class="fixed inset-0 bg-slate-950 z-50 hidden flex-col items-center justify-center gap-4">
+        <div class="w-12 h-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
+        <p class="text-sm font-semibold tracking-wide text-slate-300">Memuat halaman bio...</p>
+    </div>
+
     <!-- TAMPILAN KHUSUS PENGUNJUNG (Hanya muncul jika mengakses link hasil bagikan) -->
     <div id="viewModeContainer" class="hidden min-h-screen w-full flex items-center justify-center p-0 sm:p-4">
-        <!-- Mockup Ponsel Layar Penuh untuk Pengunjung -->
         <div id="viewBioCard" class="w-full max-w-md min-h-screen sm:min-h-[90vh] sm:max-h-[95vh] sm:rounded-3xl shadow-2xl overflow-y-auto relative flex flex-col no-scrollbar">
             <!-- Konten halaman bio akan dirender di sini via JavaScript -->
         </div>
@@ -70,9 +80,9 @@
                     </div>
                     <div>
                         <h1 class="text-sm sm:text-base font-bold tracking-tight bg-gradient-to-r from-white to-indigo-300 bg-clip-text text-transparent">
-                            BioKustom <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full ml-1 font-semibold">Premium v2.1</span>
+                            BioKustom <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full ml-1 font-semibold">Premium v2.3</span>
                         </h1>
-                        <p class="text-[10px] sm:text-[11px] text-slate-400">Pembuat Web Bio, Katalog Produk, & Tautan Referensi</p>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400">Pembuat Web Bio, Katalog Produk, & Penyimpanan Cloud Instan</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -92,17 +102,20 @@
                 
                 <!-- Navigasi Tab Editor -->
                 <div class="flex flex-wrap gap-1 p-1 bg-slate-950 rounded-xl border border-slate-900">
-                    <button onclick="switchTab('tab-profil')" id="btn-tab-profil" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg bg-indigo-600 text-white transition">
+                    <button onclick="switchTab('tab-profil')" id="btn-tab-profil" class="flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg bg-indigo-600 text-white transition">
                         Profil & Tema
                     </button>
-                    <button onclick="switchTab('tab-links')" id="btn-tab-links" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                    <button onclick="switchTab('tab-links')" id="btn-tab-links" class="flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
                         Sosial Media
                     </button>
-                    <button onclick="switchTab('tab-products')" id="btn-tab-products" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                    <button onclick="switchTab('tab-products')" id="btn-tab-products" class="flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
                         Produk Jualan
                     </button>
-                    <button onclick="switchTab('tab-essentials')" id="btn-tab-essentials" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
-                        Perlengkapan / Gear
+                    <button onclick="switchTab('tab-essentials')" id="btn-tab-essentials" class="flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                        Gear / Barang
+                    </button>
+                    <button onclick="switchTab('tab-domain')" id="btn-tab-domain" class="flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                        Domain & Cloud
                     </button>
                 </div>
 
@@ -373,6 +386,58 @@
                     </div>
                 </div>
 
+                <!-- TAB 5: DOMAIN & DATABASE CLOUD (PILIHAN SIMPEL) -->
+                <div id="tab-domain" class="space-y-6 hidden">
+                    <!-- Fitur Penyimpanan Cloud Tanpa Konfigurasi (Database Online) -->
+                    <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                <i data-lucide="cloud-lightning" class="w-4 h-4 text-indigo-400 animate-bounce"></i> Penyimpanan Awan Instan
+                            </h4>
+                            <span id="cloudStatusBadge" class="bg-slate-800 text-[9px] px-2 py-0.5 rounded-full text-slate-400 font-semibold uppercase">Checking...</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Simpan profil Anda langsung ke database awan agar bisa diakses lewat domain bawaan resmi cukup dengan menambahkan username Anda: <strong class="text-indigo-400">s-tools.id/#username</strong>. 
+                        </p>
+                        
+                        <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Domain Bawaan</label>
+                                <div class="bg-slate-900 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-400 font-mono select-none">
+                                    https://s-tools.id/
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Username / Slug Kustom Anda</label>
+                                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg overflow-hidden focus-within:border-indigo-500 transition">
+                                    <span class="text-slate-500 pl-3 text-xs font-mono select-none">#</span>
+                                    <input type="text" id="domSlug" oninput="updateMockBrowserUrl()" value="aditya" placeholder="username" class="w-full bg-transparent border-0 py-2 px-2 text-xs text-white font-mono focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="cloudActionContainer" class="space-y-3">
+                            <button id="btnSaveToCloud" onclick="saveToCloudFirestore()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/10">
+                                <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                                <span>Simpan & Aktifkan Link s-tools.id</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ekspor HTML Mandiri -->
+                    <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="file-output" class="w-4 h-4 text-emerald-500"></i> Ekspor File HTML Mandiri
+                        </h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Unduh desain Anda dalam satu file HTML mandiri. Anda bisa mengunggah file ini ke hosting gratis seperti <strong>GitHub Pages</strong> dengan domain kustom Anda sendiri secara 100% gratis!
+                        </p>
+                        <button onclick="exportSelfContainedHTML()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Ekspor & Unduh File index.html
+                        </button>
+                    </div>
+                </div>
+
                 <!-- DESAIN GAYA TOMBOL UTAMA -->
                 <div class="border-t border-slate-800 pt-5">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
@@ -408,13 +473,20 @@
                 <!-- Bingkai HP Mewah -->
                 <div class="relative w-full max-w-[325px] aspect-[9/18.5] rounded-[38px] border-[10px] border-slate-800 shadow-[0_0_45px_rgba(0,0,0,0.85)] bg-slate-950 flex flex-col overflow-hidden ring-4 ring-slate-850">
                     <!-- Sensor Kamera Depan -->
-                    <div class="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-slate-800 rounded-full z-30 flex items-center justify-center gap-1">
+                    <div class="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-slate-800 rounded-full z-30 flex items-center justify-center gap-1 pointer-events-none">
                         <div class="w-1 h-1 rounded-full bg-slate-900"></div>
                         <div class="w-7 h-0.5 bg-slate-900 rounded-full"></div>
                     </div>
                     
+                    <!-- Browser Bar Simulator (Menunjukkan s-tools.id/#username) -->
+                    <div class="bg-slate-900 border-b border-slate-850 px-3 pt-8 pb-2 flex items-center gap-1.5 text-slate-400 text-[10px] select-none z-20">
+                        <i data-lucide="lock" class="w-2.5 h-2.5 text-emerald-500"></i>
+                        <span id="mockBrowserUrl" class="font-mono truncate flex-1 text-slate-300">s-tools.id/#aditya</span>
+                        <i data-lucide="rotate-cw" class="w-2.5 h-2.5 opacity-60"></i>
+                    </div>
+                    
                     <!-- Area Dalam Layar HP -->
-                    <div id="phoneScreenContainer" class="flex-1 w-full flex flex-col overflow-y-auto no-scrollbar pt-8 pb-4 relative">
+                    <div id="phoneScreenContainer" class="flex-1 w-full flex flex-col overflow-y-auto no-scrollbar pb-4 relative">
                         <!-- Konten halaman bio dimasukkan di sini secara real-time -->
                     </div>
                 </div>
@@ -432,26 +504,30 @@
             <h3 class="text-base font-bold text-white mb-1.5 flex items-center gap-2">
                 <i data-lucide="check-circle" class="text-emerald-500 w-4 h-4"></i> Link Web Bio Anda Berhasil Dibuat!
             </h3>
-            <p class="text-xs text-slate-400 mb-4 leading-relaxed">Seluruh data konfigurasi, tema, produk, dan tautan sosial media Anda telah dipadatkan ke dalam link unik di bawah. Pengunjung bisa membukanya tanpa perlu akun.</p>
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">Pilih jenis tautan yang ingin Anda gunakan. Link cloud menggunakan domain bawaan resmi s-tools.id, sedangkan link offline menyimpan data di dalam teks URL panjang.</p>
             
-            <div class="space-y-3">
-                <div class="bg-slate-950 border border-slate-850 rounded-xl p-3 flex items-center justify-between gap-2">
-                    <span id="shareUrlText" class="text-[10px] text-indigo-400 font-mono overflow-x-auto whitespace-nowrap no-scrollbar flex-1 select-all pr-2">Mengemas tautan unik...</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="copyToClipboard()" class="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-xl text-xs transition">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                        <span>Salin Link</span>
-                    </button>
-                    <button onclick="previewBioDirect()" class="flex items-center justify-center gap-1.5 bg-slate-850 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-xl text-xs transition">
-                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                        <span>Uji Buka</span>
+            <div class="space-y-4">
+                <!-- Pilihan Tautan Cloud (Rekomendasi) -->
+                <div id="shareCloudWrapper" class="p-3 bg-slate-950/60 rounded-xl border border-indigo-500/20 space-y-2">
+                    <span class="text-[9px] bg-indigo-500/20 text-indigo-400 font-bold px-2 py-0.5 rounded uppercase">Rekomendasi (s-tools.id Cloud)</span>
+                    <div class="flex items-center justify-between gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-850">
+                        <span id="shareUrlCloudText" class="text-[10px] text-slate-300 font-mono overflow-x-auto whitespace-nowrap no-scrollbar flex-1 select-all pr-2">Simpan data ke cloud terlebih dahulu...</span>
+                    </div>
+                    <button onclick="copyToClipboard('shareUrlCloudText')" class="w-full flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 rounded-lg text-xs transition">
+                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Link s-tools.id
                     </button>
                 </div>
-            </div>
-            
-            <div id="copySuccessAlert" class="hidden mt-3 text-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] py-1.5 rounded-lg font-medium">
-                Berhasil disalin! Sekarang Anda bisa menaruhnya di bio media sosial Anda.
+
+                <!-- Pilihan Tautan Serverless -->
+                <div class="p-3 bg-slate-950/20 rounded-xl border border-slate-800 space-y-2">
+                    <span class="text-[9px] bg-slate-800 text-slate-400 font-bold px-2 py-0.5 rounded uppercase">Cadangan (Serverless / Tanpa Database)</span>
+                    <div class="flex items-center justify-between gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-850">
+                        <span id="shareUrlOfflineText" class="text-[10px] text-slate-400 font-mono overflow-x-auto whitespace-nowrap no-scrollbar flex-1 select-all pr-2">Menyusun...</span>
+                    </div>
+                    <button onclick="copyToClipboard('shareUrlOfflineText')" class="w-full flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 rounded-lg text-xs transition">
+                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Link Serverless (Panjang)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -490,7 +566,11 @@
             essentials: [
                 { id: 1, name: "Kamera Mirrorless Vlog", desc: "Sony ZV-E10 + Lensa 16-50mm f/3.5", url: "https://tokopedia.com", active: true },
                 { id: 2, name: "Lampu Meja Kerja (Samping)", desc: "Xiaomi Mijia Desk Lamp 1S", url: "https://shopee.co.id", active: true }
-            ]
+            ],
+            domain: {
+                base: "https://s-tools.id/",
+                slug: "aditya"
+            }
         };
 
         const platformIcons = {
@@ -503,12 +583,29 @@
             custom: "link"
         };
 
+        // --- SISTEM FIREBASE CONFIG & INTEGRATION ---
+        let isFirebaseAvailable = false;
+        let db, auth;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Deteksi & Inisialisasi Firebase secara anggun
+        try {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                isFirebaseAvailable = true;
+            }
+        } catch (e) {
+            console.warn("Firebase tidak terkonfigurasi. Aplikasi berjalan dalam mode Offline Serverless.", e);
+        }
+
         // Fungsi Notifikasi Toast Menggantikan alert() bawaan browser
         function showNotification(message, type = 'success') {
             const container = document.getElementById("toastContainer");
             const toast = document.createElement("div");
             
-            // Pengaturan styling berdasarkan tipe notifikasi
             const styles = type === 'success' 
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
                 : 'bg-red-500/10 border-red-500/30 text-red-400';
@@ -523,38 +620,46 @@
             container.appendChild(toast);
             lucide.createIcons();
 
-            // Animasi masuk
             setTimeout(() => {
                 toast.classList.remove('translate-y-5', 'opacity-0');
             }, 10);
 
-            // Animasi keluar setelah 3.5 detik
             setTimeout(() => {
                 toast.classList.add('translate-y-5', 'opacity-0');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
+                setTimeout(() => { toast.remove(); }, 300);
             }, 3500);
         }
 
         // Jalankan inisialisasi pada saat memuat jendela browser
-        window.onload = function() {
+        window.onload = async function() {
+            updateCloudStatusUI();
+
+            // Cek URL router (Apakah memuat data cloud / offline)
             const hash = window.location.hash;
-            if (hash && hash.startsWith("#view=")) {
-                try {
-                    const encodedData = hash.substring(6);
-                    // Dekode UTF-8 base64 dengan aman dari karakter khusus
-                    const decodedStr = decodeURIComponent(escape(atob(encodedData)));
-                    const parsedState = JSON.parse(decodedStr);
-                    
-                    if (parsedState && parsedState.profile) {
-                        bioState = parsedState;
-                        renderViewOnlyMode();
+            if (hash) {
+                // Skenario 1: Tautan Offline (Base64)
+                if (hash.startsWith("#view=")) {
+                    try {
+                        const encodedData = hash.substring(6);
+                        const decodedStr = decodeURIComponent(escape(atob(encodedData)));
+                        const parsedState = JSON.parse(decodedStr);
+                        if (parsedState && parsedState.profile) {
+                            bioState = parsedState;
+                            renderViewOnlyMode();
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Gagal membaca link terenkripsi.", e);
+                    }
+                } 
+                // Skenario 2: Tautan Cloud Pintar (#username)
+                else if (hash.length > 1 && isFirebaseAvailable) {
+                    const username = hash.substring(1);
+                    // Pastikan bukan kode internal (seperti nama tab editor)
+                    if (!['tab-profil', 'tab-links', 'tab-products', 'tab-essentials', 'tab-domain'].includes(username)) {
+                        await fetchBioFromCloud(username);
                         return;
                     }
-                } catch (e) {
-                    console.error("Gagal membaca enkripsi URL, kembali ke mode editor.", e);
-                    showNotification("Gagal membaca link terenkripsi. Membuka Editor default.", "error");
                 }
             }
 
@@ -563,16 +668,109 @@
             renderLivePreview();
         };
 
+        // RENDER DATA DARI DATABASE FIREBASE CLOUD SECARA OTOMATIS
+        async function fetchBioFromCloud(username) {
+            const loadingScreen = document.getElementById("cloudLoadingScreen");
+            loadingScreen.classList.remove("hidden");
+            loadingScreen.classList.add("flex");
+
+            try {
+                // Otentikasi sebelum memanggil database (Rule 3)
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await auth.signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await auth.signInAnonymously(auth);
+                }
+
+                // Pengambilan data sesuai struktur Strict Paths (Rule 1)
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(username);
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    bioState = docSnap.data();
+                    renderViewOnlyMode();
+                } else {
+                    showNotification(`Username "${username}" tidak ditemukan di Cloud. Membuka Editor.`, "error");
+                    initEditorForm();
+                    renderAllLists();
+                    renderLivePreview();
+                }
+            } catch (err) {
+                console.error("Gagal mengambil data dari database cloud:", err);
+                showNotification("Database sibuk atau tidak dapat diakses.", "error");
+            } finally {
+                loadingScreen.classList.add("hidden");
+                loadingScreen.classList.remove("flex");
+            }
+        }
+
+        // SIMPAN DATA BIO KE FIREBASE CLOUD (Sangat Simpel & Instan)
+        async function saveToCloudFirestore() {
+            if (!isFirebaseAvailable) {
+                showNotification("Sistem Cloud dinonaktifkan di lingkungan lokal Anda.", "error");
+                return;
+            }
+
+            const rawSlug = document.getElementById("domSlug").value.trim();
+            if (!rawSlug) {
+                showNotification("Silakan tentukan slug username unik terlebih dahulu!", "error");
+                return;
+            }
+
+            const saveBtn = document.getElementById("btnSaveToCloud");
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Menyimpan ke Cloud...`;
+            lucide.createIcons();
+
+            try {
+                // Otentikasi (Rule 3)
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await auth.signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await auth.signInAnonymously(auth);
+                }
+
+                // Kirim data ke path terstruktur (Rule 1)
+                // Menggunakan ID Dokumen berupa username agar pencarian URL sangat simpel
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(rawSlug).set(bioState);
+
+                showNotification(`Selamat! Web Bio Anda dengan username "@${rawSlug}" sukses disimpan online!`);
+            } catch (error) {
+                console.error("Gagal menyimpan ke Cloud Firestore:", error);
+                showNotification("Gagal menyimpan. Coba periksa koneksi Anda.", "error");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<i data-lucide="cloud-upload" class="w-4 h-4"></i> <span>Simpan & Aktifkan Link s-tools.id</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        // Memperbarui UI status koneksi cloud
+        function updateCloudStatusUI() {
+            const statusBadge = document.getElementById("cloudStatusBadge");
+            const shareCloudWrapper = document.getElementById("shareCloudWrapper");
+            
+            if (isFirebaseAvailable) {
+                statusBadge.innerText = "ONLINE";
+                statusBadge.className = "bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-full font-bold";
+                if (shareCloudWrapper) shareCloudWrapper.classList.remove("hidden");
+            } else {
+                statusBadge.innerText = "OFFLINE";
+                statusBadge.className = "bg-rose-500/20 text-rose-400 text-[9px] px-2 py-0.5 rounded-full font-bold";
+                if (shareCloudWrapper) shareCloudWrapper.classList.add("hidden");
+            }
+        }
+
         // Beralih Tab di Menu Builder
         function switchTab(tabId) {
-            const tabs = ['tab-profil', 'tab-links', 'tab-products', 'tab-essentials'];
+            const tabs = ['tab-profil', 'tab-links', 'tab-products', 'tab-essentials', 'tab-domain'];
             tabs.forEach(t => {
                 document.getElementById(t).classList.add('hidden');
-                document.getElementById('btn-' + t).className = "flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('btn-' + t).className = "flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition";
             });
 
             document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('btn-' + tabId).className = "flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg bg-indigo-600 text-white transition shadow";
+            document.getElementById('btn-' + tabId).className = "flex-1 min-w-[90px] py-2 px-1 text-center text-xs font-medium rounded-lg bg-indigo-600 text-white transition shadow";
         }
 
         // Pengisian Data Form Berdasarkan State
@@ -588,9 +786,16 @@
             document.getElementById("textColor").value = bioState.theme.textColor;
             document.getElementById("themeFont").value = bioState.theme.font;
 
+            // Set Domain inputs
+            if (!bioState.domain) {
+                bioState.domain = { base: "https://s-tools.id/", slug: "aditya" };
+            }
+            document.getElementById("domSlug").value = bioState.domain.slug || "aditya";
+
             updateTextColorsPreview();
             toggleAvatarTypeInput();
             updateBgSettings();
+            updateMockBrowserUrl();
         }
 
         function updateTextColorsPreview() {
@@ -667,6 +872,23 @@
                 bioState.theme.btnBorderColor = "transparent";
             }
             renderLivePreview();
+        }
+
+        // Memperbarui simulasi browser di mockup HP
+        function updateMockBrowserUrl() {
+            const rawSlug = document.getElementById("domSlug").value;
+            // Clean slug dari karakter aneh
+            const cleanSlug = rawSlug.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+            document.getElementById("domSlug").value = cleanSlug;
+            
+            bioState.domain.base = "https://s-tools.id/";
+            bioState.domain.slug = cleanSlug || "username";
+
+            // Terapkan ke elemen simulasi address bar
+            const mockBrowserText = document.getElementById("mockBrowserUrl");
+            if (mockBrowserText) {
+                mockBrowserText.innerText = "s-tools.id/#" + bioState.domain.slug;
+            }
         }
 
         // Terapkan Tema Instan Premium
@@ -1147,20 +1369,81 @@
             lucide.createIcons();
         }
 
-        // BUKA MODAL BAGIKAN LINK ENKRIPSI
+        // EKSPOR FILE HTML MANDIRI UNTUK HOSTING PRIBADI / DOMAIN KUSTOM NYATA
+        function exportSelfContainedHTML() {
+            const title = bioState.profile.name || "Halaman BioKustom Saya";
+            const bioHTML = generateCompleteBioHTML(bioState);
+            
+            const htmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>\${title}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"><\/script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .font-sans-custom { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-serif-custom { font-family: 'Playfair Display', serif; }
+        .font-mono-custom { font-family: 'Space Grotesk', sans-serif; }
+        .font-inter-custom { font-family: 'Inter', sans-serif; }
+
+        @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes wobble-soft { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-0.8deg); } 75% { transform: rotate(0.8deg); } }
+        @keyframes bounce-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .anim-pulse-soft { animation: pulse-soft 2s infinite ease-in-out; }
+        .anim-wobble-soft { animation: wobble-soft 1.5s infinite ease-in-out; }
+        .anim-bounce-soft { animation: bounce-soft 2s infinite ease-in-out; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+    <div class="w-full max-w-md min-h-screen sm:min-h-[90vh] sm:max-h-[95vh] sm:rounded-3xl shadow-2xl overflow-y-auto flex flex-col no-scrollbar">
+        \${bioHTML}
+    </div>
+    <script>
+        lucide.createIcons();
+    <\/script>
+</body>
+</html>`;
+
+            const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            const cleanFileName = title.toLowerCase().replace(/[^a-z0-9]/g, "-") || "bio";
+            a.href = url;
+            a.download = `${cleanFileName}-biokustom.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification("Unduhan dimulai! File siap diunggah ke hosting atau domain kustom Anda.");
+        }
+
+        // BUKA MODAL BAGIKAN LINK
         function openShareModal() {
             const modal = document.getElementById("shareModal");
             modal.classList.remove("hidden");
             modal.classList.add("flex");
 
-            // Kompresi seluruh data state menjadi URL Hash Base64 (Mendukung UTF-8 secara aman)
+            // 1. Link Offline (Base64 URL panjang)
             const jsonStr = JSON.stringify(bioState);
             const b64Data = btoa(unescape(encodeURIComponent(jsonStr)));
-            const shareUrl = `${window.location.origin}${window.location.pathname}#view=${b64Data}`;
-            
-            const shareTextSpan = document.getElementById("shareUrlText");
-            shareTextSpan.innerText = shareUrl;
-            shareTextSpan.scrollLeft = 0;
+            const shareUrlOffline = `${window.location.origin}${window.location.pathname}#view=${b64Data}`;
+            document.getElementById("shareUrlOfflineText").innerText = shareUrlOffline;
+
+            // 2. Link Cloud (Pintar dengan hash bawaan s-tools.id)
+            const slug = bioState.domain.slug || "username";
+            const shareUrlCloud = `https://s-tools.id/#${slug}`;
+            document.getElementById("shareUrlCloudText").innerText = isFirebaseAvailable ? shareUrlCloud : "Database cloud belum aktif";
         }
 
         function closeShareModal() {
@@ -1171,8 +1454,13 @@
         }
 
         // SALIN LINK KE KERTAS KLIP (Clipboard)
-        function copyToClipboard() {
-            const shareUrl = document.getElementById("shareUrlText").innerText;
+        function copyToClipboard(elementId) {
+            const shareUrl = document.getElementById(elementId).innerText;
+            if (shareUrl.includes("belum aktif") || shareUrl.includes("terlebih dahulu")) {
+                showNotification("Silakan simpan data Anda ke database terlebih dahulu!", "error");
+                return;
+            }
+
             const tempInput = document.createElement("input");
             tempInput.style.position = "absolute";
             tempInput.style.left = "-9999px";
@@ -1182,19 +1470,19 @@
             
             try {
                 document.execCommand('copy');
-                const successAlert = document.getElementById("copySuccessAlert");
-                successAlert.classList.remove("hidden");
                 showNotification("Tautan bio berhasil disalin ke clipboard!");
-                setTimeout(() => { successAlert.classList.add("hidden"); }, 4000);
             } catch (err) {
-                console.error("Gagal menyalin link kustom", err);
-                showNotification("Gagal menyalin otomatis. Silakan salin teks link secara manual.", "error");
+                console.error("Gagal menyalin link", err);
+                showNotification("Gagal menyalin otomatis. Silakan salin secara manual.", "error");
             }
             document.body.removeChild(tempInput);
         }
 
         function previewBioDirect() {
-            const shareUrl = document.getElementById("shareUrlText").innerText;
+            const slug = bioState.domain.slug || "username";
+            const shareUrl = isFirebaseAvailable 
+                ? `https://s-tools.id/#${slug}` 
+                : document.getElementById("shareUrlOfflineText").innerText;
             window.open(shareUrl, '_blank');
         }
     </script>
