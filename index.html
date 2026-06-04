@@ -596,22 +596,47 @@
             custom: "link"
         };
 
+        // =========================================================================
+        // KONFIGURASI DATABASE CLOUD (FIREBASE) - WAJIB DIISI UNTUK HOSTING SENDIRI
+        // =========================================================================
+        // Ganti teks di bawah ini dengan konfigurasi dari Firebase Project Anda!
+        const myFirebaseConfig = {
+            apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+            authDomain: "GANTI_DENGAN_PROJECT_ID.firebaseapp.com",
+            projectId: "GANTI_DENGAN_PROJECT_ID",
+            storageBucket: "GANTI_DENGAN_PROJECT_ID.appspot.com",
+            messagingSenderId: "GANTI_DENGAN_SENDER_ID",
+            appId: "GANTI_DENGAN_APP_ID"
+        };
+        // =========================================================================
+
         // --- SISTEM FIREBASE CONFIG & INTEGRATION ---
         let isFirebaseAvailable = false;
         let db, auth;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'biokustom-app';
 
         // Deteksi & Inisialisasi Firebase secara otomatis
         try {
+            let configToUse = null;
+            
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                const firebaseConfig = JSON.parse(__firebase_config);
-                firebase.initializeApp(firebaseConfig);
+                // Berjalan di environment canvas AI (Preview)
+                configToUse = JSON.parse(__firebase_config);
+            } else if (myFirebaseConfig.apiKey && myFirebaseConfig.apiKey !== "GANTI_DENGAN_API_KEY_ANDA") {
+                // Berjalan di hosting pribadi (Cloudflare/GitHub) dengan config yang sudah diisi
+                configToUse = myFirebaseConfig;
+            }
+
+            if (configToUse) {
+                firebase.initializeApp(configToUse);
                 auth = firebase.auth();
                 db = firebase.firestore();
                 isFirebaseAvailable = true;
+            } else {
+                console.warn("Konfigurasi Firebase belum diisi. Fitur Cloud dinonaktifkan.");
             }
         } catch (e) {
-            console.warn("Firebase tidak terkonfigurasi. Aplikasi berjalan dalam mode Offline Serverless.", e);
+            console.warn("Gagal menginisialisasi Firebase.", e);
         }
 
         // Fungsi Notifikasi Toast Menggantikan alert() bawaan browser
@@ -697,9 +722,9 @@
                     // Berhasil masuk
                 } else {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await auth.signInWithCustomToken(auth, __initial_auth_token);
+                        await auth.signInWithCustomToken(__initial_auth_token);
                     } else {
-                        await auth.signInAnonymously(auth);
+                        await auth.signInAnonymously();
                     }
                 }
 
@@ -760,9 +785,9 @@
                 // Otentikasi (Rule 3)
                 if (!auth.currentUser) {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await auth.signInWithCustomToken(auth, __initial_auth_token);
+                        await auth.signInWithCustomToken(__initial_auth_token);
                     } else {
-                        await auth.signInAnonymously(auth);
+                        await auth.signInAnonymously();
                     }
                 }
 
@@ -834,7 +859,7 @@
 
             try {
                 if (!auth.currentUser) {
-                    await auth.signInAnonymously(auth);
+                    await auth.signInAnonymously();
                 }
 
                 const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(rawSlug);
@@ -946,7 +971,7 @@
 
         function updateProfileText() {
             bioState.profile.name = document.getElementById("profileName").value;
-            bioState.profile.bio = document.getElementById("profileBio").value;
+            document.getElementById("profileBio").value = bioState.profile.bio;
             renderLivePreview();
         }
 
@@ -1577,7 +1602,6 @@
             const modal = document.getElementById("shareModal");
             modal.classList.add("hidden");
             modal.classList.remove("flex");
-            document.getElementById("copySuccessAlert").classList.add("hidden");
         }
 
         // SALIN LINK KE KERTAS KLIP (Clipboard)
