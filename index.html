@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioKustom Premium - Pembuat Halaman Bio & Katalog Jualan</title>
+    
+    <!-- Tailwind CSS untuk Desain Kelas Dunia -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons untuk Grafis Ikon Vektor yang Tajam -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Pengaturan Tipografi Dinamis */
+        .font-sans-custom { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-serif-custom { font-family: 'Playfair Display', serif; }
+        .font-mono-custom { font-family: 'Space Grotesk', sans-serif; }
+        .font-inter-custom { font-family: 'Inter', sans-serif; }
+
+        /* Animasi Lembut untuk Tombol Interaktif */
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        @keyframes wobble-soft {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-0.8deg); }
+            75% { transform: rotate(0.8deg); }
+        }
+        @keyframes bounce-soft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .anim-pulse-soft { animation: pulse-soft 2s infinite ease-in-out; }
+        .anim-wobble-soft { animation: wobble-soft 1.5s infinite ease-in-out; }
+        .anim-bounce-soft { animation: bounce-soft 2s infinite ease-in-out; }
+
+        /* Sembunyikan scrollbar bawaan browser untuk UI yang bersih */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans-custom min-h-screen flex flex-col antialiased">
+
+    <!-- KONTAINER NOTIFIKASI TOAST KUSTOM (Mencegah alert bawaan) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+    <!-- TAMPILAN KHUSUS PENGUNJUNG (Hanya muncul jika mengakses link hasil bagikan) -->
+    <div id="viewModeContainer" class="hidden min-h-screen w-full flex items-center justify-center p-0 sm:p-4">
+        <!-- Mockup Ponsel Layar Penuh untuk Pengunjung -->
+        <div id="viewBioCard" class="w-full max-w-md min-h-screen sm:min-h-[90vh] sm:max-h-[95vh] sm:rounded-3xl shadow-2xl overflow-y-auto relative flex flex-col no-scrollbar">
+            <!-- Konten halaman bio akan dirender di sini via JavaScript -->
+        </div>
+    </div>
+
+    <!-- LAYAR UTAMA BUILDER / EDITOR -->
+    <div id="editorModeContainer" class="flex flex-col min-h-screen">
+        <!-- Kepala Halaman (Header) -->
+        <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-md shadow-indigo-500/20">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm sm:text-base font-bold tracking-tight bg-gradient-to-r from-white to-indigo-300 bg-clip-text text-transparent">
+                            BioKustom <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full ml-1 font-semibold">Premium v2.1</span>
+                        </h1>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400">Pembuat Web Bio, Katalog Produk, & Tautan Referensi</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btnShare" onclick="openShareModal()" class="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white text-xs font-semibold rounded-xl shadow-lg shadow-indigo-600/20">
+                        <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                        <span>Bagikan Halaman</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Area Kerja Utama -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- PANEL EDITOR SEBELAH KIRI (7 Kolom) -->
+            <section class="lg:col-span-7 bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur-sm space-y-6">
+                
+                <!-- Navigasi Tab Editor -->
+                <div class="flex flex-wrap gap-1 p-1 bg-slate-950 rounded-xl border border-slate-900">
+                    <button onclick="switchTab('tab-profil')" id="btn-tab-profil" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg bg-indigo-600 text-white transition">
+                        Profil & Tema
+                    </button>
+                    <button onclick="switchTab('tab-links')" id="btn-tab-links" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                        Sosial Media
+                    </button>
+                    <button onclick="switchTab('tab-products')" id="btn-tab-products" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                        Produk Jualan
+                    </button>
+                    <button onclick="switchTab('tab-essentials')" id="btn-tab-essentials" class="flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition">
+                        Perlengkapan / Gear
+                    </button>
+                </div>
+
+                <!-- TAB 1: PROFIL & TEMA -->
+                <div id="tab-profil" class="space-y-6">
+                    <!-- Biodata Profil -->
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="user" class="w-3.5 h-3.5"></i> Informasi Utama Bio
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                            <!-- Input Foto Profil (Avatar) -->
+                            <div class="sm:col-span-4 flex flex-col items-center justify-center bg-slate-900/60 border border-slate-800/80 p-3 rounded-xl text-center">
+                                <label class="text-[10px] font-semibold text-slate-400 mb-2">Foto / Icon Profil</label>
+                                <div id="avatarPreview" class="w-14 h-14 rounded-full bg-indigo-500/20 border border-indigo-500 flex items-center justify-center text-2xl mb-2.5 shadow-inner">
+                                    🌟
+                                </div>
+                                <select id="avatarType" onchange="toggleAvatarTypeInput()" class="w-full bg-slate-950 border border-slate-850 rounded-lg py-1 px-1.5 text-xs text-slate-300 focus:outline-none">
+                                    <option value="emoji">Emoji</option>
+                                    <option value="url">URL Foto Web</option>
+                                </select>
+                                <input type="text" id="avatarValue" oninput="updateAvatarValue()" value="🌟" class="w-full mt-2 bg-slate-950 border border-slate-850 rounded-lg py-1 px-1.5 text-xs text-center text-white focus:outline-none">
+                            </div>
+                            <!-- Nama dan Biodata Singkat -->
+                            <div class="sm:col-span-8 space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Nama Profil</label>
+                                    <input type="text" id="profileName" oninput="updateProfileText()" value="Aditya Pratama" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 text-xs text-white focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Bio Singkat</label>
+                                    <textarea id="profileBio" oninput="updateProfileText()" rows="2.5" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 text-xs text-white resize-none focus:outline-none">Digital Creator & Minimalist Setup. Berbagi ulasan teknologi harian & barang penunjang produktivitas.</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pilihan Preset Tema Cepat -->
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="palette" class="w-3.5 h-3.5"></i> Pilih Preset Gaya Terpopuler
+                        </h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <button onclick="applyPresetTheme('glass')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800/30 text-left transition relative">
+                                <span class="block text-xs font-bold text-white">Glassmorphism</span>
+                                <span class="block text-[10px] text-slate-500">Kaca Transparan</span>
+                                <div class="absolute right-2 bottom-2 w-3.5 h-3.5 rounded-full bg-white/20 border border-white/40"></div>
+                            </button>
+                            <button onclick="applyPresetTheme('sunset')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800/30 text-left transition relative">
+                                <span class="block text-xs font-bold text-orange-400">Sunset Glow</span>
+                                <span class="block text-[10px] text-slate-500">Gradien Senja</span>
+                                <div class="absolute right-2 bottom-2 w-3.5 h-3.5 rounded-full bg-gradient-to-r from-orange-500 to-pink-500"></div>
+                            </button>
+                            <button onclick="applyPresetTheme('neon')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800/30 text-left transition relative">
+                                <span class="block text-xs font-bold text-cyan-400">Cyber Neon</span>
+                                <span class="block text-[10px] text-slate-500">Retro Cyberpunk</span>
+                                <div class="absolute right-2 bottom-2 w-3.5 h-3.5 rounded-full bg-black border border-cyan-500"></div>
+                            </button>
+                            <button onclick="applyPresetTheme('pastel')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800/30 text-left transition relative">
+                                <span class="block text-xs font-bold text-purple-300">Sweet Pastel</span>
+                                <span class="block text-[10px] text-slate-500">Lembut & Estetik</span>
+                                <div class="absolute right-2 bottom-2 w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-pink-200 to-purple-200"></div>
+                            </button>
+                            <button onclick="applyPresetTheme('minimal-dark')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800/30 text-left transition relative">
+                                <span class="block text-xs font-bold text-slate-300">Minimal Dark</span>
+                                <span class="block text-[10px] text-slate-500">Hitam Pekat</span>
+                                <div class="absolute right-2 bottom-2 w-3.5 h-3.5 rounded-full bg-neutral-900 border border-slate-800"></div>
+                            </button>
+                            <button onclick="applyPresetTheme('matcha')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800/30 text-left transition relative">
+                                <span class="block text-xs font-bold text-emerald-400">Matcha Green</span>
+                                <span class="block text-[10px] text-slate-500">Segar & Alami</span>
+                                <div class="absolute right-2 bottom-2 w-3.5 h-3.5 rounded-full bg-emerald-950 border border-emerald-400"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kustomisasi Warna Latar Belakang & Tipografi -->
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Sesuaikan Warna Latar & Huruf Anda
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-3 bg-slate-900/40 p-4 rounded-xl border border-slate-850">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Gaya Latar Belakang</label>
+                                    <select id="bgType" onchange="updateBgSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1 px-2.5 text-xs text-white focus:outline-none">
+                                        <option value="solid">Satu Warna (Solid)</option>
+                                        <option value="gradient">Warna Gradasi (Gradien)</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 mb-1">Warna Utama</label>
+                                        <div class="flex gap-1.5 items-center bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                                            <input type="color" id="bgColor1" oninput="applyCustomColors()" value="#0f172a" class="w-5 h-5 rounded bg-transparent border-0 cursor-pointer">
+                                            <span id="bgColor1Text" class="text-[10px] uppercase text-slate-400">#0F172A</span>
+                                        </div>
+                                    </div>
+                                    <div id="bgColor2Wrapper">
+                                        <label class="block text-[9px] font-semibold text-slate-500 mb-1">Warna Kedua</label>
+                                        <div class="flex gap-1.5 items-center bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                                            <input type="color" id="bgColor2" oninput="applyCustomColors()" value="#1e293b" class="w-5 h-5 rounded bg-transparent border-0 cursor-pointer">
+                                            <span id="bgColor2Text" class="text-[10px] uppercase text-slate-400">#1E293B</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 bg-slate-900/40 p-4 rounded-xl border border-slate-850">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Tipe Huruf (Font)</label>
+                                    <select id="themeFont" onchange="updateFontSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-white focus:outline-none">
+                                        <option value="font-sans-custom">Plus Jakarta Sans (Modern)</option>
+                                        <option value="font-inter-custom">Inter (Minimalis)</option>
+                                        <option value="font-serif-custom">Playfair Display (Klasik)</option>
+                                        <option value="font-mono-custom">Space Grotesk (Teknologi)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Warna Teks Utama</label>
+                                    <div class="flex gap-1.5 items-center bg-slate-950 px-2 py-1 rounded border border-slate-800 w-1/2">
+                                        <input type="color" id="textColor" oninput="applyCustomColors()" value="#ffffff" class="w-5 h-5 rounded bg-transparent border-0 cursor-pointer">
+                                        <span id="textColorText" class="text-[10px] uppercase text-slate-400">#FFFFFF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DAFTAR TAUTAN MEDIA SOSIAL -->
+                <div id="tab-links" class="space-y-6 hidden">
+                    <!-- Form Tambah Sosial Media Baru -->
+                    <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-3.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-500"></i> Tambah Media Sosial Baru
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Nama Tautan</label>
+                                <input type="text" id="newLinkTitle" placeholder="Contoh: Instagram Saya" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Pilih Platform</label>
+                                <select id="newLinkPlatform" onchange="autoFillPlatformDetails()" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none">
+                                    <option value="instagram">Instagram</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="twitter">Twitter / X</option>
+                                    <option value="whatsapp">WhatsApp Business</option>
+                                    <option value="github">GitHub</option>
+                                    <option value="custom">Tautan Lainnya (Kustom)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Tautan URL Lengkap</label>
+                            <input type="text" id="newLinkUrl" placeholder="https://instagram.com/username" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Emoji Pendukung</label>
+                                <input type="text" id="newLinkEmoji" placeholder="🔥" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-center text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Efek Animasi Tombol</label>
+                                <select id="newLinkAnimation" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none">
+                                    <option value="none">Tanpa Efek</option>
+                                    <option value="pulse">Berdenyut Pelan</option>
+                                    <option value="wobble">Goyang Samping</option>
+                                    <option value="bounce">Lompat Kecil</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="addNewLink()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambahkan Tautan
+                        </button>
+                    </div>
+
+                    <!-- Pengaturan & Urutan Sosmed -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="list-ordered" class="w-4 h-4 text-indigo-400"></i> Kelola Urutan Tautan
+                        </h4>
+                        <div id="linksList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                            <!-- List Sosmed render otomatis via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: PRODUK JUALAN -->
+                <div id="tab-products" class="space-y-6 hidden">
+                    <!-- Form Tambah Produk Baru -->
+                    <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-3.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-500"></i> Tambah Produk Dagang / Jasa
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Nama Produk</label>
+                                <input type="text" id="prodTitle" placeholder="Contoh: Kaos Polos Katun Premium" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Harga Produk</label>
+                                <input type="text" id="prodPrice" placeholder="Contoh: Rp 89.000 atau FREE" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Tautan Pembelian (Shopee/Tokopedia/Web)</label>
+                                <input type="text" id="prodUrl" placeholder="https://shopee.co.id/link-barang" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">URL Gambar Produk (Rekomendasi Unsplash/ImgBB)</label>
+                                <input type="text" id="prodImg" placeholder="https://domain.com/foto-kaos.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                        </div>
+                        <button onclick="addNewProduct()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Pasang Produk Baru
+                        </button>
+                    </div>
+
+                    <!-- Kelola Produk Jualan -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="box" class="w-4 h-4 text-indigo-400"></i> Daftar Produk Aktif Anda
+                        </h4>
+                        <div id="productsList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                            <!-- List Produk render otomatis via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: PERLENGKAPAN & GEAR REKOMENDASI -->
+                <div id="tab-essentials" class="space-y-6 hidden">
+                    <!-- Form Tambah Perlengkapan -->
+                    <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-3.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="hard-drive" class="w-4 h-4 text-amber-500"></i> Rekomendasi Barang / Essentials
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Nama Barang / Deskripsi Singkat</label>
+                                <input type="text" id="essName" placeholder="Contoh: Keyboard Mechanical Setup" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Keterangan Tambahan / Merk</label>
+                                <input type="text" id="essDesc" placeholder="Contoh: Keychron K2 V2 (Gateron Brown)" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Link Afiliasi / Tautan Pembelian</label>
+                            <input type="text" id="essUrl" placeholder="https://tokopedia.link/..." class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white placeholder-slate-600 focus:outline-none">
+                        </div>
+                        <button onclick="addNewEssential()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2 rounded-xl text-xs transition shadow-lg shadow-amber-600/20 flex items-center justify-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambahkan Barang ke List
+                        </button>
+                    </div>
+
+                    <!-- Kelola Perlengkapan -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i> Daftar Perlengkapan Terpajang
+                        </h4>
+                        <div id="essentialsList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                            <!-- List Essentials render otomatis via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DESAIN GAYA TOMBOL UTAMA -->
+                <div class="border-t border-slate-800 pt-5">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+                        <i data-lucide="toggle-left" class="w-3.5 h-3.5"></i> Desain Potongan Tombol Halaman
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-3">
+                            <label class="block text-xs font-semibold text-slate-400">Bentuk Tombol</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="updateBtnShape('rounded-none')" class="py-2 rounded border border-slate-800 bg-slate-950 hover:bg-slate-900 text-xs text-white">Siku-Siku</button>
+                                <button onclick="updateBtnShape('rounded-xl')" class="py-2 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-900 text-xs text-white">Modern</button>
+                                <button onclick="updateBtnShape('rounded-full')" class="py-2 rounded-full border border-slate-800 bg-slate-950 hover:bg-slate-900 text-xs text-white">Melingkar</button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-3">
+                            <label class="block text-xs font-semibold text-slate-400">Gaya Tombol</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="updateBtnStyle('solid')" class="py-2 rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-900 text-xs text-white">Penuh</button>
+                                <button onclick="updateBtnStyle('outline')" class="py-2 rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-900 text-xs text-white">Garis</button>
+                                <button onclick="updateBtnStyle('glass')" class="py-2 rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-900 text-xs text-white">Kaca</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL PRATINJAU SMARTPHONE SEBELAH KANAN (5 Kolom) -->
+            <section class="lg:col-span-5 flex flex-col items-center justify-center sticky top-24">
+                <span class="text-xs font-bold text-slate-400 mb-2.5 uppercase tracking-widest flex items-center gap-1.5 select-none">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Pratinjau HP Aktif
+                </span>
+                
+                <!-- Bingkai HP Mewah -->
+                <div class="relative w-full max-w-[325px] aspect-[9/18.5] rounded-[38px] border-[10px] border-slate-800 shadow-[0_0_45px_rgba(0,0,0,0.85)] bg-slate-950 flex flex-col overflow-hidden ring-4 ring-slate-850">
+                    <!-- Sensor Kamera Depan -->
+                    <div class="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-slate-800 rounded-full z-30 flex items-center justify-center gap-1">
+                        <div class="w-1 h-1 rounded-full bg-slate-900"></div>
+                        <div class="w-7 h-0.5 bg-slate-900 rounded-full"></div>
+                    </div>
+                    
+                    <!-- Area Dalam Layar HP -->
+                    <div id="phoneScreenContainer" class="flex-1 w-full flex flex-col overflow-y-auto no-scrollbar pt-8 pb-4 relative">
+                        <!-- Konten halaman bio dimasukkan di sini secara real-time -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL POPUP BAGIKAN LINK -->
+    <div id="shareModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 max-w-md w-full rounded-2xl p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-1.5 flex items-center gap-2">
+                <i data-lucide="check-circle" class="text-emerald-500 w-4 h-4"></i> Link Web Bio Anda Berhasil Dibuat!
+            </h3>
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">Seluruh data konfigurasi, tema, produk, dan tautan sosial media Anda telah dipadatkan ke dalam link unik di bawah. Pengunjung bisa membukanya tanpa perlu akun.</p>
+            
+            <div class="space-y-3">
+                <div class="bg-slate-950 border border-slate-850 rounded-xl p-3 flex items-center justify-between gap-2">
+                    <span id="shareUrlText" class="text-[10px] text-indigo-400 font-mono overflow-x-auto whitespace-nowrap no-scrollbar flex-1 select-all pr-2">Mengemas tautan unik...</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="copyToClipboard()" class="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-xl text-xs transition">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        <span>Salin Link</span>
+                    </button>
+                    <button onclick="previewBioDirect()" class="flex items-center justify-center gap-1.5 bg-slate-850 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-xl text-xs transition">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                        <span>Uji Buka</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="copySuccessAlert" class="hidden mt-3 text-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] py-1.5 rounded-lg font-medium">
+                Berhasil disalin! Sekarang Anda bisa menaruhnya di bio media sosial Anda.
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT UTAMA (Penyusun Logika & Penyimpan State) -->
+    <script>
+        // State awal penampung data (sudah terisi data contoh)
+        let bioState = {
+            profile: {
+                name: "Aditya Pratama",
+                bio: "Digital Creator & Minimalist Setup. Berbagi ulasan teknologi harian & barang penunjang produktivitas.",
+                avatarType: "emoji",
+                avatarValue: "✨"
+            },
+            theme: {
+                preset: "sunset",
+                bgType: "gradient",
+                bgColor1: "#ea580c",
+                bgColor2: "#db2777",
+                textColor: "#ffffff",
+                btnShape: "rounded-xl",
+                btnBgColor: "rgba(255, 255, 255, 0.15)",
+                btnTextColor: "#ffffff",
+                btnBorderColor: "rgba(255, 255, 255, 0.25)",
+                btnStyle: "glass",
+                font: "font-sans-custom"
+            },
+            links: [
+                { id: 1, type: "social", platform: "instagram", title: "Instagram Official", url: "https://instagram.com", emoji: "📸", active: true, animation: "none" },
+                { id: 2, type: "social", platform: "tiktok", title: "Tutorial & Tips TikTok", url: "https://tiktok.com", emoji: "🎥", active: true, animation: "wobble" }
+            ],
+            products: [
+                { id: 1, title: "Ebook Panduan Setup Aesthetic v1.0", price: "Rp 35.000", url: "https://tokopedia.com", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&auto=format&fit=crop&q=70", active: true },
+                { id: 2, title: "Desk Mat Wool Gray Premium", price: "Rp 129.000", url: "https://shopee.co.id", image: "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=200&auto=format&fit=crop&q=70", active: true }
+            ],
+            essentials: [
+                { id: 1, name: "Kamera Mirrorless Vlog", desc: "Sony ZV-E10 + Lensa 16-50mm f/3.5", url: "https://tokopedia.com", active: true },
+                { id: 2, name: "Lampu Meja Kerja (Samping)", desc: "Xiaomi Mijia Desk Lamp 1S", url: "https://shopee.co.id", active: true }
+            ]
+        };
+
+        const platformIcons = {
+            instagram: "instagram",
+            tiktok: "music",
+            youtube: "youtube",
+            twitter: "twitter",
+            whatsapp: "phone",
+            github: "github",
+            custom: "link"
+        };
+
+        // Fungsi Notifikasi Toast Menggantikan alert() bawaan browser
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            
+            // Pengaturan styling berdasarkan tipe notifikasi
+            const styles = type === 'success' 
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                : 'bg-red-500/10 border-red-500/30 text-red-400';
+            const iconName = type === 'success' ? 'check-circle' : 'alert-triangle';
+
+            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl border text-xs font-semibold transform translate-y-5 opacity-0 transition-all duration-300 pointer-events-auto ${styles}`;
+            toast.innerHTML = `
+                <i data-lucide="${iconName}" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="leading-snug">${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            // Animasi masuk
+            setTimeout(() => {
+                toast.classList.remove('translate-y-5', 'opacity-0');
+            }, 10);
+
+            // Animasi keluar setelah 3.5 detik
+            setTimeout(() => {
+                toast.classList.add('translate-y-5', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+
+        // Jalankan inisialisasi pada saat memuat jendela browser
+        window.onload = function() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith("#view=")) {
+                try {
+                    const encodedData = hash.substring(6);
+                    // Dekode UTF-8 base64 dengan aman dari karakter khusus
+                    const decodedStr = decodeURIComponent(escape(atob(encodedData)));
+                    const parsedState = JSON.parse(decodedStr);
+                    
+                    if (parsedState && parsedState.profile) {
+                        bioState = parsedState;
+                        renderViewOnlyMode();
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Gagal membaca enkripsi URL, kembali ke mode editor.", e);
+                    showNotification("Gagal membaca link terenkripsi. Membuka Editor default.", "error");
+                }
+            }
+
+            initEditorForm();
+            renderAllLists();
+            renderLivePreview();
+        };
+
+        // Beralih Tab di Menu Builder
+        function switchTab(tabId) {
+            const tabs = ['tab-profil', 'tab-links', 'tab-products', 'tab-essentials'];
+            tabs.forEach(t => {
+                document.getElementById(t).classList.add('hidden');
+                document.getElementById('btn-' + t).className = "flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition";
+            });
+
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).className = "flex-1 min-w-[100px] py-2 px-2 text-center text-xs font-medium rounded-lg bg-indigo-600 text-white transition shadow";
+        }
+
+        // Pengisian Data Form Berdasarkan State
+        function initEditorForm() {
+            document.getElementById("profileName").value = bioState.profile.name;
+            document.getElementById("profileBio").value = bioState.profile.bio;
+            document.getElementById("avatarType").value = bioState.profile.avatarType;
+            document.getElementById("avatarValue").value = bioState.profile.avatarValue;
+            
+            document.getElementById("bgType").value = bioState.theme.bgType;
+            document.getElementById("bgColor1").value = bioState.theme.bgColor1;
+            document.getElementById("bgColor2").value = bioState.theme.bgColor2;
+            document.getElementById("textColor").value = bioState.theme.textColor;
+            document.getElementById("themeFont").value = bioState.theme.font;
+
+            updateTextColorsPreview();
+            toggleAvatarTypeInput();
+            updateBgSettings();
+        }
+
+        function updateTextColorsPreview() {
+            document.getElementById("bgColor1Text").innerText = document.getElementById("bgColor1").value;
+            document.getElementById("bgColor2Text").innerText = document.getElementById("bgColor2").value;
+            document.getElementById("textColorText").innerText = document.getElementById("textColor").value;
+        }
+
+        function toggleAvatarTypeInput() {
+            const type = document.getElementById("avatarType").value;
+            const input = document.getElementById("avatarValue");
+            bioState.profile.avatarType = type;
+            input.placeholder = type === "emoji" ? "Masukkan emoji (✨)" : "URL Foto https://...";
+            renderLivePreview();
+        }
+
+        function updateAvatarValue() {
+            bioState.profile.avatarValue = document.getElementById("avatarValue").value;
+            renderLivePreview();
+        }
+
+        function updateProfileText() {
+            bioState.profile.name = document.getElementById("profileName").value;
+            bioState.profile.bio = document.getElementById("profileBio").value;
+            renderLivePreview();
+        }
+
+        function updateBgSettings() {
+            const bgType = document.getElementById("bgType").value;
+            bioState.theme.bgType = bgType;
+            
+            const gradWrapper = document.getElementById("bgColor2Wrapper");
+            if (bgType === "solid") {
+                gradWrapper.classList.add("opacity-30", "pointer-events-none");
+            } else {
+                gradWrapper.classList.remove("opacity-30", "pointer-events-none");
+            }
+            applyCustomColors();
+        }
+
+        function applyCustomColors() {
+            bioState.theme.preset = "custom";
+            bioState.theme.bgColor1 = document.getElementById("bgColor1").value;
+            bioState.theme.bgColor2 = document.getElementById("bgColor2").value;
+            bioState.theme.textColor = document.getElementById("textColor").value;
+            updateTextColorsPreview();
+            renderLivePreview();
+        }
+
+        function updateFontSettings() {
+            bioState.theme.font = document.getElementById("themeFont").value;
+            renderLivePreview();
+        }
+
+        function updateBtnShape(shapeClass) {
+            bioState.theme.btnShape = shapeClass;
+            renderLivePreview();
+            showNotification("Bentuk tombol berhasil diperbarui!");
+        }
+
+        function updateBtnStyle(styleName) {
+            bioState.theme.btnStyle = styleName;
+            if (styleName === "glass") {
+                bioState.theme.btnBgColor = "rgba(255, 255, 255, 0.12)";
+                bioState.theme.btnBorderColor = "rgba(255, 255, 255, 0.22)";
+                bioState.theme.btnTextColor = bioState.theme.textColor;
+            } else if (styleName === "outline") {
+                bioState.theme.btnBgColor = "transparent";
+                bioState.theme.btnBorderColor = bioState.theme.textColor;
+                bioState.theme.btnTextColor = bioState.theme.textColor;
+            } else {
+                bioState.theme.btnBgColor = "#ffffff";
+                bioState.theme.btnTextColor = "#0f172a";
+                bioState.theme.btnBorderColor = "transparent";
+            }
+            renderLivePreview();
+        }
+
+        // Terapkan Tema Instan Premium
+        function applyPresetTheme(presetName) {
+            bioState.theme.preset = presetName;
+            if (presetName === 'glass') {
+                bioState.theme.bgType = "gradient";
+                bioState.theme.bgColor1 = "#0f172a";
+                bioState.theme.bgColor2 = "#1e293b";
+                bioState.theme.textColor = "#ffffff";
+                bioState.theme.btnStyle = "glass";
+                bioState.theme.btnShape = "rounded-xl";
+                bioState.theme.font = "font-sans-custom";
+            } else if (presetName === 'sunset') {
+                bioState.theme.bgType = "gradient";
+                bioState.theme.bgColor1 = "#ea580c";
+                bioState.theme.bgColor2 = "#db2777";
+                bioState.theme.textColor = "#ffffff";
+                bioState.theme.btnStyle = "glass";
+                bioState.theme.btnShape = "rounded-full";
+                bioState.theme.font = "font-sans-custom";
+            } else if (presetName === 'neon') {
+                bioState.theme.bgType = "solid";
+                bioState.theme.bgColor1 = "#09090b";
+                bioState.theme.textColor = "#22d3ee";
+                bioState.theme.btnStyle = "outline";
+                bioState.theme.btnShape = "rounded-none";
+                bioState.theme.font = "font-mono-custom";
+            } else if (presetName === 'pastel') {
+                bioState.theme.bgType = "gradient";
+                bioState.theme.bgColor1 = "#fbcfe8";
+                bioState.theme.bgColor2 = "#ddd6fe";
+                bioState.theme.textColor = "#4c1d95";
+                bioState.theme.btnStyle = "solid";
+                bioState.theme.btnShape = "rounded-xl";
+                bioState.theme.font = "font-sans-custom";
+            } else if (presetName === 'minimal-dark') {
+                bioState.theme.bgType = "solid";
+                bioState.theme.bgColor1 = "#18181b";
+                bioState.theme.textColor = "#f4f4f5";
+                bioState.theme.btnStyle = "solid";
+                bioState.theme.btnShape = "rounded-lg";
+                bioState.theme.font = "font-inter-custom";
+            } else if (presetName === 'matcha') {
+                bioState.theme.bgType = "gradient";
+                bioState.theme.bgColor1 = "#064e3b";
+                bioState.theme.bgColor2 = "#022c22";
+                bioState.theme.textColor = "#a7f3d0";
+                bioState.theme.btnStyle = "glass";
+                bioState.theme.btnShape = "rounded-2xl";
+                bioState.theme.font = "font-serif-custom";
+            }
+
+            updateBtnStyle(bioState.theme.btnStyle);
+            initEditorForm();
+            renderLivePreview();
+            showNotification(`Tema "${presetName.toUpperCase()}" berhasil diterapkan!`);
+        }
+
+        // Pengisian Data Sosmed Secara Otomatis Berdasarkan Pilihan
+        function autoFillPlatformDetails() {
+            const platform = document.getElementById("newLinkPlatform").value;
+            const titleInput = document.getElementById("newLinkTitle");
+            const urlInput = document.getElementById("newLinkUrl");
+            const emojiInput = document.getElementById("newLinkEmoji");
+
+            if (platform === "instagram") {
+                titleInput.value = "Urusan Harian di Instagram";
+                urlInput.value = "https://instagram.com/username";
+                emojiInput.value = "📸";
+            } else if (platform === "tiktok") {
+                titleInput.value = "Gaya Hidup di TikTok";
+                urlInput.value = "https://tiktok.com/@username";
+                emojiInput.value = "🎬";
+            } else if (platform === "youtube") {
+                titleInput.value = "Berlangganan di YouTube";
+                urlInput.value = "https://youtube.com/c/username";
+                emojiInput.value = "📺";
+            } else if (platform === "twitter") {
+                titleInput.value = "Pikiran Pendek di X / Twitter";
+                urlInput.value = "https://twitter.com/username";
+                emojiInput.value = "🐦";
+            } else if (platform === "whatsapp") {
+                titleInput.value = "Chat Langsung via WhatsApp";
+                urlInput.value = "https://wa.me/62812345678";
+                emojiInput.value = "💬";
+            } else if (platform === "github") {
+                titleInput.value = "Kumpulan Projek di GitHub";
+                urlInput.value = "https://github.com/username";
+                emojiInput.value = "💻";
+            } else {
+                titleInput.value = "";
+                urlInput.value = "";
+                emojiInput.value = "🔗";
+            }
+        }
+
+        // TAMBAH LINK SOSMED BARU
+        function addNewLink() {
+            const title = document.getElementById("newLinkTitle").value.trim();
+            const platform = document.getElementById("newLinkPlatform").value;
+            const url = document.getElementById("newLinkUrl").value.trim();
+            const emoji = document.getElementById("newLinkEmoji").value.trim() || "🔗";
+            const animation = document.getElementById("newLinkAnimation").value;
+
+            if (!title || !url) {
+                showNotification("Harap lengkapi kolom Nama Tautan dan alamat URL!", "error");
+                return;
+            }
+
+            bioState.links.push({
+                id: Date.now(),
+                type: "social",
+                platform: platform,
+                title: title,
+                url: url,
+                emoji: emoji,
+                active: true,
+                animation: animation
+            });
+
+            document.getElementById("newLinkTitle").value = "";
+            document.getElementById("newLinkUrl").value = "";
+            document.getElementById("newLinkEmoji").value = "";
+            
+            renderAllLists();
+            renderLivePreview();
+            showNotification("Media sosial berhasil ditambahkan ke daftar!");
+        }
+
+        // TAMBAH PRODUK BARU
+        function addNewProduct() {
+            const title = document.getElementById("prodTitle").value.trim();
+            const price = document.getElementById("prodPrice").value.trim() || "FREE";
+            const url = document.getElementById("prodUrl").value.trim();
+            const image = document.getElementById("prodImg").value.trim() || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150&auto=format&fit=crop&q=60";
+
+            if (!title || !url) {
+                showNotification("Isi minimal judul produk jualan dan alamat pembelian produk!", "error");
+                return;
+            }
+
+            bioState.products.push({
+                id: Date.now(),
+                title: title,
+                price: price,
+                url: url,
+                image: image,
+                active: true
+            });
+
+            document.getElementById("prodTitle").value = "";
+            document.getElementById("prodPrice").value = "";
+            document.getElementById("prodUrl").value = "";
+            document.getElementById("prodImg").value = "";
+
+            renderAllLists();
+            renderLivePreview();
+            showNotification("Produk jualan berhasil ditambahkan!");
+        }
+
+        // TAMBAH ALAT / PERLENGKAPAN BARU
+        function addNewEssential() {
+            const name = document.getElementById("essName").value.trim();
+            const desc = document.getElementById("essDesc").value.trim();
+            const url = document.getElementById("essUrl").value.trim();
+
+            if (!name) {
+                showNotification("Mohon berikan nama barang atau setup perlengkapan Anda!", "error");
+                return;
+            }
+
+            bioState.essentials.push({
+                id: Date.now(),
+                name: name,
+                desc: desc,
+                url: url || "#",
+                active: true
+            });
+
+            document.getElementById("essName").value = "";
+            document.getElementById("essDesc").value = "";
+            document.getElementById("essUrl").value = "";
+
+            renderAllLists();
+            renderLivePreview();
+            showNotification("Barang gear setup berhasil ditambahkan!");
+        }
+
+        // HAPUS ELEMEN STATE
+        function deleteItem(arrayName, id) {
+            bioState[arrayName] = bioState[arrayName].filter(item => item.id !== id);
+            renderAllLists();
+            renderLivePreview();
+            showNotification("Item berhasil dihapus.");
+        }
+
+        // TOGGLE NONAKTIFKAN / AKTIFKAN ITEM
+        function toggleItemActive(arrayName, id) {
+            const idx = bioState[arrayName].findIndex(item => item.id === id);
+            if (idx !== -1) {
+                bioState[arrayName][idx].active = !bioState[arrayName][idx].active;
+                renderLivePreview();
+                renderAllLists();
+                showNotification(`Status tampilan item diubah.`);
+            }
+        }
+
+        // RENDER SEMUA DAFTAR EDITABLE DI EDITOR KIRI
+        function renderAllLists() {
+            // Render Sosmed
+            const linksList = document.getElementById("linksList");
+            linksList.innerHTML = bioState.links.length === 0 ? `<p class="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-800 rounded-xl">Belum ada sosmed terpajang.</p>` : "";
+            bioState.links.forEach(link => {
+                const div = document.createElement("div");
+                div.className = `flex items-center justify-between p-2.5 rounded-xl border transition ${link.active ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-950/20 border-slate-900/50 opacity-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="text-base">${link.emoji}</span>
+                        <div class="truncate">
+                            <p class="font-bold text-white truncate max-w-[140px]">${link.title}</p>
+                            <p class="text-[9px] text-slate-500 truncate max-w-[150px]">${link.url}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="toggleItemActive('links', ${link.id})" class="p-1 text-slate-400 hover:text-white transition" title="Tampilkan/Sembunyikan">
+                            <i data-lucide="${link.active ? 'eye' : 'eye-off'}" class="w-3.5 h-3.5 ${link.active ? 'text-indigo-400' : ''}"></i>
+                        </button>
+                        <button onclick="deleteItem('links', ${link.id})" class="p-1 text-slate-500 hover:text-red-400 transition" title="Hapus">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                linksList.appendChild(div);
+            });
+
+            // Render Produk Jualan
+            const productsList = document.getElementById("productsList");
+            productsList.innerHTML = bioState.products.length === 0 ? `<p class="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-800 rounded-xl">Belum ada katalog jualan terpajang.</p>` : "";
+            bioState.products.forEach(prod => {
+                const div = document.createElement("div");
+                div.className = `flex items-center justify-between p-2 rounded-xl border transition ${prod.active ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-950/20 border-slate-900/50 opacity-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <img src="${prod.image}" class="w-8 h-8 rounded object-cover flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=50&q=50';">
+                        <div class="truncate">
+                            <p class="font-bold text-white truncate max-w-[140px]">${prod.title}</p>
+                            <p class="text-[9px] text-emerald-400">${prod.price}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="toggleItemActive('products', ${prod.id})" class="p-1 text-slate-400 hover:text-white transition" title="Tampilkan/Sembunyikan">
+                            <i data-lucide="${prod.active ? 'eye' : 'eye-off'}" class="w-3.5 h-3.5 ${prod.active ? 'text-indigo-400' : ''}"></i>
+                        </button>
+                        <button onclick="deleteItem('products', ${prod.id})" class="p-1 text-slate-500 hover:text-red-400 transition" title="Hapus">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                productsList.appendChild(div);
+            });
+
+            // Render Essentials / Peralangan Gear
+            const essentialsList = document.getElementById("essentialsList");
+            essentialsList.innerHTML = bioState.essentials.length === 0 ? `<p class="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-800 rounded-xl">Belum ada perlengkapan terpajang.</p>` : "";
+            bioState.essentials.forEach(ess => {
+                const div = document.createElement("div");
+                div.className = `flex items-center justify-between p-2 rounded-xl border transition ${ess.active ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-950/20 border-slate-900/50 opacity-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-6 h-6 bg-slate-800 flex items-center justify-center rounded text-[10px] text-amber-400 font-bold">#</div>
+                        <div class="truncate">
+                            <p class="font-bold text-white truncate max-w-[140px]">${ess.name}</p>
+                            <p class="text-[9px] text-slate-400 truncate max-w-[140px]">${ess.desc || 'No deskripsi'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="toggleItemActive('essentials', ${ess.id})" class="p-1 text-slate-400 hover:text-white transition" title="Tampilkan/Sembunyikan">
+                            <i data-lucide="${ess.active ? 'eye' : 'eye-off'}" class="w-3.5 h-3.5 ${ess.active ? 'text-indigo-400' : ''}"></i>
+                        </button>
+                        <button onclick="deleteItem('essentials', ${ess.id})" class="p-1 text-slate-500 hover:text-red-400 transition" title="Hapus">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                essentialsList.appendChild(div);
+            });
+
+            lucide.createIcons();
+        }
+
+        // FUNGSI UTAMA PENYUSUN DESAIN HTML BIO (Dipakai oleh Live Preview & View-Only Mode)
+        function generateCompleteBioHTML(state) {
+            const { profile, theme, links, products, essentials } = state;
+            const fontClass = theme.font || 'font-sans-custom';
+            
+            // 1. Bangun Avatar / Foto Profil
+            let avatarHtml = "";
+            if (profile.avatarType === "emoji") {
+                avatarHtml = `
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-md border" style="border-color: ${theme.textColor}30; background-color: ${theme.textColor}10">
+                        ${profile.avatarValue || "🌟"}
+                    </div>
+                `;
+            } else {
+                avatarHtml = `
+                    <img src="${profile.avatarValue || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}" 
+                         alt="Foto Profil" 
+                         onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';"
+                         class="w-16 h-16 rounded-full object-cover shadow-md border" 
+                         style="border-color: ${theme.textColor}30">
+                `;
+            }
+
+            // 2. Bangun Kumpulan Tombol Sosmed
+            let linksHtml = "";
+            const activeLinks = links ? links.filter(l => l.active) : [];
+            if (activeLinks.length > 0) {
+                linksHtml += `<div class="w-full flex flex-col gap-2.5">`;
+                activeLinks.forEach(link => {
+                    let animClass = "";
+                    if (link.animation === "pulse") animClass = "anim-pulse-soft";
+                    else if (link.animation === "wobble") animClass = "anim-wobble-soft";
+                    else if (link.animation === "bounce") animClass = "anim-bounce-soft";
+
+                    let buttonStyle = "";
+                    if (theme.btnStyle === "glass") {
+                        buttonStyle = `background-color: ${theme.btnBgColor}; border: 1px solid ${theme.btnBorderColor}; color: ${theme.btnTextColor}; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);`;
+                    } else if (theme.btnStyle === "outline") {
+                        buttonStyle = `background-color: transparent; border: 1px solid ${theme.btnBorderColor}; color: ${theme.btnTextColor};`;
+                    } else {
+                        buttonStyle = `background-color: ${theme.btnBgColor}; border: 1px solid transparent; color: ${theme.btnTextColor};`;
+                    }
+
+                    linksHtml += `
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
+                           class="w-full flex items-center justify-between p-3.5 transition-all hover:scale-[1.015] shadow-sm relative ${theme.btnShape} ${animClass}"
+                           style="${buttonStyle}">
+                            <div class="flex items-center gap-3">
+                                <span class="text-base flex-shrink-0">${link.emoji}</span>
+                                <span class="text-xs font-semibold tracking-wide pr-2 truncate max-w-[180px]">${link.title}</span>
+                            </div>
+                            <div class="flex-shrink-0 opacity-60" style="color: ${theme.btnTextColor}">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </div>
+                        </a>
+                    `;
+                });
+                linksHtml += `</div>`;
+            }
+
+            // 3. Bangun Galeri Dua Kolom Produk Jualan
+            let productsHtml = "";
+            const activeProducts = products ? products.filter(p => p.active) : [];
+            if (activeProducts.length > 0) {
+                productsHtml += `
+                    <div class="w-full mt-5">
+                        <h3 class="text-[10px] font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 opacity-85" style="color: ${theme.textColor}">
+                            <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> Produk Jualan Saya
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2.5">
+                `;
+                activeProducts.forEach(prod => {
+                    let cardStyle = "";
+                    let btnStyle = "";
+                    if (theme.btnStyle === "glass") {
+                        cardStyle = `background-color: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);`;
+                        btnStyle = `background-color: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); color: ${theme.textColor};`;
+                    } else if (theme.btnStyle === "outline") {
+                        cardStyle = `background-color: transparent; border: 1px solid ${theme.textColor}30;`;
+                        btnStyle = `background-color: transparent; border: 1px solid ${theme.textColor}; color: ${theme.textColor};`;
+                    } else {
+                        cardStyle = `background-color: #ffffff10; border: 1px solid transparent;`;
+                        btnStyle = `background-color: ${theme.textColor}; color: ${theme.bgColor1};`;
+                    }
+
+                    productsHtml += `
+                        <div class="flex flex-col p-2.5 ${theme.btnShape} overflow-hidden shadow-sm transition hover:scale-[1.01]" style="${cardStyle}">
+                            <img src="${prod.image}" class="w-full h-24 object-cover rounded-lg mb-2.5" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&q=60';">
+                            <h4 class="text-[10px] font-bold truncate mb-1" style="color: ${theme.textColor}">${prod.title}</h4>
+                            <p class="text-[10px] font-extrabold mb-2.5" style="color: ${theme.textColor}f0">${prod.price}</p>
+                            <a href="${prod.url}" target="_blank" class="block text-center py-1.5 text-[9px] font-bold transition hover:opacity-90 rounded-md" style="${btnStyle}">
+                                Beli Sekarang
+                            </a>
+                        </div>
+                    `;
+                });
+                productsHtml += `</div></div>`;
+            }
+
+            // 4. Bangun Bagian Daftar Perlengkapan Gear
+            let essentialsHtml = "";
+            const activeEssentials = essentials ? essentials.filter(e => e.active) : [];
+            if (activeEssentials.length > 0) {
+                essentialsHtml += `
+                    <div class="w-full mt-5">
+                        <h3 class="text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 opacity-85" style="color: ${theme.textColor}">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Perlengkapan & Gear Setup
+                        </h3>
+                        <div class="flex flex-col gap-2">
+                `;
+                activeEssentials.forEach(ess => {
+                    let essStyle = "";
+                    if (theme.btnStyle === "glass") {
+                        essStyle = `background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);`;
+                    } else if (theme.btnStyle === "outline") {
+                        essStyle = `background-color: transparent; border: 1px solid ${theme.textColor}20;`;
+                    } else {
+                        essStyle = `background-color: rgba(255, 255, 255, 0.05); border: 1px solid transparent;`;
+                    }
+
+                    essentialsHtml += `
+                        <a href="${ess.url}" target="_blank" class="flex items-center justify-between p-2.5 shadow-sm hover:scale-[1.005] transition-all ${theme.btnShape}" style="${essStyle}">
+                            <div class="overflow-hidden pr-2">
+                                <h4 class="text-[10px] font-bold truncate" style="color: ${theme.textColor}">${ess.name}</h4>
+                                <p class="text-[8px] truncate opacity-70" style="color: ${theme.textColor}">${ess.desc || ''}</p>
+                            </div>
+                            <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center opacity-70" style="background-color: ${theme.textColor}10; color: ${theme.textColor}">
+                                <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
+                            </div>
+                        </a>
+                    `;
+                });
+                essentialsHtml += `</div></div>`;
+            }
+
+            // Integrasi & Pengaturan Wrapper Luar
+            const backgroundStyle = buildBackgroundStyle(theme);
+            const content = `
+                <div class="flex-1 w-full flex flex-col items-center p-5 ${fontClass} transition-all duration-300" style="${backgroundStyle} color: ${theme.textColor}">
+                    
+                    <!-- Kepala Bio (Profil) -->
+                    <div class="flex flex-col items-center text-center mt-3 mb-6">
+                        ${avatarHtml}
+                        <h2 class="text-sm font-extrabold mt-3 tracking-tight">${profile.name || "Nama Profil"}</h2>
+                        <p class="text-[10px] max-w-[220px] mt-1.5 leading-normal opacity-80" style="color: ${theme.textColor}">
+                            ${profile.bio || "Bio kustom Anda"}
+                        </p>
+                    </div>
+
+                    <!-- Kumpulan Tautan Sosmed -->
+                    ${linksHtml}
+
+                    <!-- Galeri Produk Dagang -->
+                    ${productsHtml}
+
+                    <!-- Rekomendasi Perlengkapan -->
+                    ${essentialsHtml}
+
+                    <!-- Premium Branding Footer -->
+                    <div class="mt-8 mb-2 text-center text-[8px] opacity-40 hover:opacity-80 transition py-1.5 w-full" style="color: ${theme.textColor}">
+                        <a href="${window.location.origin}${window.location.pathname}" target="_blank" class="font-bold tracking-wider uppercase flex items-center justify-center gap-1">
+                            <span>Dibuat dengan BioKustom</span>
+                            <i data-lucide="sparkles" class="w-2.5 h-2.5 text-amber-300 animate-pulse"></i>
+                        </a>
+                    </div>
+                </div>
+            `;
+            return content;
+        }
+
+        function buildBackgroundStyle(themeObj) {
+            return themeObj.bgType === "solid" ? `background-color: ${themeObj.bgColor1};` : `background: linear-gradient(135deg, ${themeObj.bgColor1}, ${themeObj.bgColor2});`;
+        }
+
+        function renderLivePreview() {
+            const container = document.getElementById("phoneScreenContainer");
+            container.innerHTML = generateCompleteBioHTML(bioState);
+            lucide.createIcons();
+        }
+
+        function renderViewOnlyMode() {
+            document.getElementById("editorModeContainer").classList.add("hidden");
+            document.getElementById("viewModeContainer").classList.remove("hidden");
+            
+            const card = document.getElementById("viewBioCard");
+            card.innerHTML = generateCompleteBioHTML(bioState);
+            lucide.createIcons();
+        }
+
+        // BUKA MODAL BAGIKAN LINK ENKRIPSI
+        function openShareModal() {
+            const modal = document.getElementById("shareModal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            // Kompresi seluruh data state menjadi URL Hash Base64 (Mendukung UTF-8 secara aman)
+            const jsonStr = JSON.stringify(bioState);
+            const b64Data = btoa(unescape(encodeURIComponent(jsonStr)));
+            const shareUrl = `${window.location.origin}${window.location.pathname}#view=${b64Data}`;
+            
+            const shareTextSpan = document.getElementById("shareUrlText");
+            shareTextSpan.innerText = shareUrl;
+            shareTextSpan.scrollLeft = 0;
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById("shareModal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            document.getElementById("copySuccessAlert").classList.add("hidden");
+        }
+
+        // SALIN LINK KE KERTAS KLIP (Clipboard)
+        function copyToClipboard() {
+            const shareUrl = document.getElementById("shareUrlText").innerText;
+            const tempInput = document.createElement("input");
+            tempInput.style.position = "absolute";
+            tempInput.style.left = "-9999px";
+            tempInput.value = shareUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                document.execCommand('copy');
+                const successAlert = document.getElementById("copySuccessAlert");
+                successAlert.classList.remove("hidden");
+                showNotification("Tautan bio berhasil disalin ke clipboard!");
+                setTimeout(() => { successAlert.classList.add("hidden"); }, 4000);
+            } catch (err) {
+                console.error("Gagal menyalin link kustom", err);
+                showNotification("Gagal menyalin otomatis. Silakan salin teks link secara manual.", "error");
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        function previewBioDirect() {
+            const shareUrl = document.getElementById("shareUrlText").innerText;
+            window.open(shareUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
