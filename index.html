@@ -386,40 +386,53 @@
                     </div>
                 </div>
 
-                <!-- TAB 5: DOMAIN & DATABASE CLOUD (PILIHAN SIMPEL) -->
+                <!-- TAB 5: DOMAIN & DATABASE CLOUD (PILIHAN SIMPEL s-tools.id/bio/) -->
                 <div id="tab-domain" class="space-y-6 hidden">
                     <!-- Fitur Penyimpanan Cloud Tanpa Konfigurasi (Database Online) -->
                     <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-850 space-y-4">
                         <div class="flex items-center justify-between">
                             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                                <i data-lucide="cloud-lightning" class="w-4 h-4 text-indigo-400 animate-bounce"></i> Penyimpanan Awan Instan
+                                <i data-lucide="cloud-lightning" class="w-4 h-4 text-indigo-400 animate-bounce"></i> Penyimpanan Awan Resmi
                             </h4>
                             <span id="cloudStatusBadge" class="bg-slate-800 text-[9px] px-2 py-0.5 rounded-full text-slate-400 font-semibold uppercase">Checking...</span>
                         </div>
                         <p class="text-[11px] text-slate-400 leading-relaxed">
-                            Simpan profil Anda langsung ke database awan agar bisa diakses lewat domain bawaan resmi cukup dengan menambahkan username Anda: <strong class="text-indigo-400">s-tools.id/#username</strong>. 
+                            Simpan profil Anda langsung ke database awan agar bisa diakses lewat domain bawaan resmi cukup dengan menambahkan username Anda: <strong class="text-indigo-400">s-tools.id/bio/#@username</strong>.
                         </p>
                         
                         <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl space-y-3">
                             <div>
-                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Domain Bawaan</label>
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Domain & Subfolder Bawaan</label>
                                 <div class="bg-slate-900 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-400 font-mono select-none">
-                                    https://s-tools.id/
+                                    https://s-tools.id/bio/
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Username / Slug Kustom Anda</label>
-                                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg overflow-hidden focus-within:border-indigo-500 transition">
-                                    <span class="text-slate-500 pl-3 text-xs font-mono select-none">#</span>
-                                    <input type="text" id="domSlug" oninput="updateMockBrowserUrl()" value="aditya" placeholder="username" class="w-full bg-transparent border-0 py-2 px-2 text-xs text-white font-mono focus:outline-none">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Username / Slug Kustom</label>
+                                    <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg overflow-hidden focus-within:border-indigo-500 transition">
+                                        <span class="text-slate-500 pl-3 text-xs font-mono select-none">#@</span>
+                                        <input type="text" id="domSlug" oninput="updateMockBrowserUrl()" value="aditya" placeholder="username" class="w-full bg-transparent border-0 py-2 px-2 text-xs text-white font-mono focus:outline-none">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1">Passcode PIN Keamanan (4-6 Digit)</label>
+                                    <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg overflow-hidden focus-within:border-indigo-500 transition">
+                                        <span class="text-slate-500 pl-3"><i data-lucide="key" class="w-3.5 h-3.5"></i></span>
+                                        <input type="password" id="cloudPasscode" placeholder="PIN Rahasia" class="w-full bg-transparent border-0 py-2 px-2 text-xs text-white font-mono focus:outline-none">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="cloudActionContainer" class="space-y-3">
-                            <button id="btnSaveToCloud" onclick="saveToCloudFirestore()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/10">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button id="btnSaveToCloud" onclick="saveToCloudFirestore()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/10">
                                 <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-                                <span>Simpan & Aktifkan Link s-tools.id</span>
+                                <span>Simpan / Update di Cloud</span>
+                            </button>
+                            <button id="btnLoadFromCloud" onclick="loadFromCloudFirestore()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition text-slate-300 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                                <i data-lucide="cloud-download" class="w-4 h-4"></i>
+                                <span>Muat & Edit dari Cloud</span>
                             </button>
                         </div>
                     </div>
@@ -478,10 +491,10 @@
                         <div class="w-7 h-0.5 bg-slate-900 rounded-full"></div>
                     </div>
                     
-                    <!-- Browser Bar Simulator (Menunjukkan s-tools.id/#username) -->
+                    <!-- Browser Bar Simulator (Menunjukkan s-tools.id/bio/#@username) -->
                     <div class="bg-slate-900 border-b border-slate-850 px-3 pt-8 pb-2 flex items-center gap-1.5 text-slate-400 text-[10px] select-none z-20">
                         <i data-lucide="lock" class="w-2.5 h-2.5 text-emerald-500"></i>
-                        <span id="mockBrowserUrl" class="font-mono truncate flex-1 text-slate-300">s-tools.id/#aditya</span>
+                        <span id="mockBrowserUrl" class="font-mono truncate flex-1 text-slate-300">s-tools.id/bio/#@aditya</span>
                         <i data-lucide="rotate-cw" class="w-2.5 h-2.5 opacity-60"></i>
                     </div>
                     
@@ -504,7 +517,7 @@
             <h3 class="text-base font-bold text-white mb-1.5 flex items-center gap-2">
                 <i data-lucide="check-circle" class="text-emerald-500 w-4 h-4"></i> Link Web Bio Anda Berhasil Dibuat!
             </h3>
-            <p class="text-xs text-slate-400 mb-4 leading-relaxed">Pilih jenis tautan yang ingin Anda gunakan. Link cloud menggunakan domain bawaan resmi s-tools.id, sedangkan link offline menyimpan data di dalam teks URL panjang.</p>
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">Pilih jenis tautan yang ingin Anda gunakan. Link cloud menggunakan domain bawaan resmi s-tools.id/bio/, sedangkan link offline menyimpan data di dalam teks URL panjang.</p>
             
             <div class="space-y-4">
                 <!-- Pilihan Tautan Cloud (Rekomendasi) -->
@@ -514,7 +527,7 @@
                         <span id="shareUrlCloudText" class="text-[10px] text-slate-300 font-mono overflow-x-auto whitespace-nowrap no-scrollbar flex-1 select-all pr-2">Simpan data ke cloud terlebih dahulu...</span>
                     </div>
                     <button onclick="copyToClipboard('shareUrlCloudText')" class="w-full flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 rounded-lg text-xs transition">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Link s-tools.id
+                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Link s-tools.id/bio/
                     </button>
                 </div>
 
@@ -568,7 +581,7 @@
                 { id: 2, name: "Lampu Meja Kerja (Samping)", desc: "Xiaomi Mijia Desk Lamp 1S", url: "https://shopee.co.id", active: true }
             ],
             domain: {
-                base: "https://s-tools.id/",
+                base: "https://s-tools.id/bio/",
                 slug: "aditya"
             }
         };
@@ -588,7 +601,7 @@
         let db, auth;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // Deteksi & Inisialisasi Firebase secara anggun
+        // Deteksi & Inisialisasi Firebase secara otomatis
         try {
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 const firebaseConfig = JSON.parse(__firebase_config);
@@ -652,9 +665,13 @@
                         console.error("Gagal membaca link terenkripsi.", e);
                     }
                 } 
-                // Skenario 2: Tautan Cloud Pintar (#username)
+                // Skenario 2: Tautan Cloud Pintar (#@username atau #username)
                 else if (hash.length > 1 && isFirebaseAvailable) {
-                    const username = hash.substring(1);
+                    let username = hash.substring(1);
+                    // Hapus karakter '@' jika ada di depan username
+                    if (username.startsWith("@")) {
+                        username = username.substring(1);
+                    }
                     // Pastikan bukan kode internal (seperti nama tab editor)
                     if (!['tab-profil', 'tab-links', 'tab-products', 'tab-essentials', 'tab-domain'].includes(username)) {
                         await fetchBioFromCloud(username);
@@ -676,71 +693,176 @@
 
             try {
                 // Otentikasi sebelum memanggil database (Rule 3)
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await auth.signInWithCustomToken(auth, __initial_auth_token);
+                if (auth.currentUser) {
+                    // Berhasil masuk
                 } else {
-                    await auth.signInAnonymously(auth);
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await auth.signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await auth.signInAnonymously(auth);
+                    }
                 }
+
+                if (!auth.currentUser) return;
 
                 // Pengambilan data sesuai struktur Strict Paths (Rule 1)
                 const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(username);
                 const docSnap = await docRef.get();
 
                 if (docSnap.exists) {
-                    bioState = docSnap.data();
+                    const cloudData = docSnap.data();
+                    bioState = cloudData;
                     renderViewOnlyMode();
                 } else {
-                    showNotification(`Username "${username}" tidak ditemukan di Cloud. Membuka Editor.`, "error");
+                    showNotification(`Username "@${username}" tidak ditemukan di Cloud. Membuka Editor.`, "error");
                     initEditorForm();
                     renderAllLists();
                     renderLivePreview();
                 }
             } catch (err) {
                 console.error("Gagal mengambil data dari database cloud:", err);
-                showNotification("Database sibuk atau tidak dapat diakses.", "error");
+                showNotification("Gagal memuat data cloud. Sistem dialihkan ke Editor.", "error");
+                initEditorForm();
+                renderAllLists();
+                renderLivePreview();
             } finally {
                 loadingScreen.classList.add("hidden");
                 loadingScreen.classList.remove("flex");
             }
         }
 
-        // SIMPAN DATA BIO KE FIREBASE CLOUD (Sangat Simpel & Instan)
+        // SIMPAN DATA BIO KE FIREBASE CLOUD DENGAN SISTEM PASSCODE AMAN
         async function saveToCloudFirestore() {
             if (!isFirebaseAvailable) {
-                showNotification("Sistem Cloud dinonaktifkan di lingkungan lokal Anda.", "error");
+                showNotification("Database cloud tidak tersedia di lingkungan lokal Anda.", "error");
                 return;
             }
 
             const rawSlug = document.getElementById("domSlug").value.trim();
+            const passcode = document.getElementById("cloudPasscode").value.trim();
+
             if (!rawSlug) {
                 showNotification("Silakan tentukan slug username unik terlebih dahulu!", "error");
                 return;
             }
 
+            if (!passcode || passcode.length < 4) {
+                showNotification("Harap buat Passcode minimal 4 digit untuk keamanan pengeditan!", "error");
+                return;
+            }
+
             const saveBtn = document.getElementById("btnSaveToCloud");
             saveBtn.disabled = true;
-            saveBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Menyimpan ke Cloud...`;
+            saveBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Memvalidasi...`;
             lucide.createIcons();
 
             try {
                 // Otentikasi (Rule 3)
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await auth.signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await auth.signInAnonymously(auth);
+                if (!auth.currentUser) {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await auth.signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await auth.signInAnonymously(auth);
+                    }
                 }
 
-                // Kirim data ke path terstruktur (Rule 1)
-                // Menggunakan ID Dokumen berupa username agar pencarian URL sangat simpel
-                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(rawSlug).set(bioState);
+                if (!auth.currentUser) {
+                    showNotification("Masalah otentikasi database.", "error");
+                    return;
+                }
 
-                showNotification(`Selamat! Web Bio Anda dengan username "@${rawSlug}" sukses disimpan online!`);
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(rawSlug);
+                const docSnap = await docRef.get();
+
+                // Validasi kepemilikan data dengan Passcode jika username sudah ada
+                if (docSnap.exists) {
+                    const existingData = docSnap.data();
+                    if (existingData.security && existingData.security.passcode !== passcode) {
+                        showNotification("Username ini sudah terdaftar! Passcode yang Anda masukkan salah.", "error");
+                        return;
+                    }
+                }
+
+                // Tambahkan metadata keamanan ke dalam state data bio
+                bioState.security = {
+                    passcode: passcode,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                bioState.domain = {
+                    base: "https://s-tools.id/bio/",
+                    slug: rawSlug
+                };
+
+                // Kirim data ke path terstruktur (Rule 1)
+                await docRef.set(bioState);
+
+                showNotification(`Selamat! Web Bio Anda dengan username "@${rawSlug}" sukses disimpan!`);
             } catch (error) {
                 console.error("Gagal menyimpan ke Cloud Firestore:", error);
-                showNotification("Gagal menyimpan. Coba periksa koneksi Anda.", "error");
+                showNotification("Gagal mengunggah. Coba periksa koneksi internet Anda.", "error");
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = `<i data-lucide="cloud-upload" class="w-4 h-4"></i> <span>Simpan & Aktifkan Link s-tools.id</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        // AMBIL & MUAT ULANG DATA BIO UNTUK DIEDIT KEMBALI
+        async function loadFromCloudFirestore() {
+            if (!isFirebaseAvailable) {
+                showNotification("Database cloud tidak tersedia.", "error");
+                return;
+            }
+
+            const rawSlug = document.getElementById("domSlug").value.trim();
+            const passcode = document.getElementById("cloudPasscode").value.trim();
+
+            if (!rawSlug) {
+                showNotification("Masukkan Username yang ingin Anda edit!", "error");
+                return;
+            }
+
+            if (!passcode) {
+                showNotification("Masukkan Passcode yang Anda buat sebelumnya!", "error");
+                return;
+            }
+
+            const loadBtn = document.getElementById("btnLoadFromCloud");
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Memuat data...`;
+            lucide.createIcons();
+
+            try {
+                if (!auth.currentUser) {
+                    await auth.signInAnonymously(auth);
+                }
+
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('bios').doc(rawSlug);
+                const docSnap = await docRef.get();
+
+                if (!docSnap.exists) {
+                    showNotification(`Username "@${rawSlug}" belum terdaftar di database cloud.`, "error");
+                    return;
+                }
+
+                const cloudData = docSnap.data();
+                if (cloudData.security && cloudData.security.passcode !== passcode) {
+                    showNotification("Passcode PIN yang Anda masukkan salah. Akses ditolak!", "error");
+                    return;
+                }
+
+                // Sukses! Ambil data cloud, timpa local state, dan render ulang editor
+                bioState = cloudData;
+                initEditorForm();
+                renderAllLists();
+                renderLivePreview();
+                showNotification(`Data bio "@${rawSlug}" berhasil dimuat ke editor! Silakan edit sesuka Anda.`);
+            } catch (err) {
+                console.error("Gagal memuat data cloud:", err);
+                showNotification("Error mengambil data dari cloud database.", "error");
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.innerHTML = `<i data-lucide="cloud-download" class="w-4 h-4"></i> <span>Muat & Edit dari Cloud</span>`;
                 lucide.createIcons();
             }
         }
@@ -788,9 +910,14 @@
 
             // Set Domain inputs
             if (!bioState.domain) {
-                bioState.domain = { base: "https://s-tools.id/", slug: "aditya" };
+                bioState.domain = { base: "https://s-tools.id/bio/", slug: "aditya" };
             }
             document.getElementById("domSlug").value = bioState.domain.slug || "aditya";
+            if (bioState.security && bioState.security.passcode) {
+                document.getElementById("cloudPasscode").value = bioState.security.passcode;
+            } else {
+                document.getElementById("cloudPasscode").value = "";
+            }
 
             updateTextColorsPreview();
             toggleAvatarTypeInput();
@@ -881,13 +1008,13 @@
             const cleanSlug = rawSlug.toLowerCase().replace(/[^a-z0-9-_]/g, '');
             document.getElementById("domSlug").value = cleanSlug;
             
-            bioState.domain.base = "https://s-tools.id/";
+            bioState.domain.base = "https://s-tools.id/bio/";
             bioState.domain.slug = cleanSlug || "username";
 
             // Terapkan ke elemen simulasi address bar
             const mockBrowserText = document.getElementById("mockBrowserUrl");
             if (mockBrowserText) {
-                mockBrowserText.innerText = "s-tools.id/#" + bioState.domain.slug;
+                mockBrowserText.innerText = "s-tools.id/bio/#@" + bioState.domain.slug;
             }
         }
 
@@ -1440,9 +1567,9 @@
             const shareUrlOffline = `${window.location.origin}${window.location.pathname}#view=${b64Data}`;
             document.getElementById("shareUrlOfflineText").innerText = shareUrlOffline;
 
-            // 2. Link Cloud (Pintar dengan hash bawaan s-tools.id)
+            // 2. Link Cloud (Pintar dengan hash bawaan s-tools.id/bio/)
             const slug = bioState.domain.slug || "username";
-            const shareUrlCloud = `https://s-tools.id/#${slug}`;
+            const shareUrlCloud = `https://s-tools.id/bio/#@${slug}`;
             document.getElementById("shareUrlCloudText").innerText = isFirebaseAvailable ? shareUrlCloud : "Database cloud belum aktif";
         }
 
@@ -1481,7 +1608,7 @@
         function previewBioDirect() {
             const slug = bioState.domain.slug || "username";
             const shareUrl = isFirebaseAvailable 
-                ? `https://s-tools.id/#${slug}` 
+                ? `https://s-tools.id/bio/#@${slug}` 
                 : document.getElementById("shareUrlOfflineText").innerText;
             window.open(shareUrl, '_blank');
         }
